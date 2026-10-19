@@ -24,8 +24,8 @@ services:
       - key: JWT_REFRESH_SECRET
         generateValue: true
       - key: EMAIL_OTP_PROVIDER
-        value: resend
-      - key: RESEND_API_KEY
+        value: brevo
+      - key: BREVO_API_KEY
         sync: false
       - key: EMAIL_FROM
         sync: false

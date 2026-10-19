@@ -13,10 +13,20 @@ export async function sendOtp(email: string): Promise<void> {
     return;
   }
   try {
-    const response = await fetch("https://api.resend.com/emails", {
+    const isBrevo = config.EMAIL_OTP_PROVIDER === "brevo";
+    const response = await fetch(isBrevo ? "https://api.brevo.com/v3/smtp/email" : "https://api.resend.com/emails", {
       method: "POST",
-      headers: { Authorization: `Bearer ${config.RESEND_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
+      headers: {
+        ...(isBrevo ? { "api-key": config.BREVO_API_KEY! } : { Authorization: `Bearer ${config.RESEND_API_KEY}` }),
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(isBrevo ? {
+        sender: { name: config.EMAIL_FROM_NAME, email: config.EMAIL_FROM },
+        to: [{ email }],
+        subject: "Your Sydex verification code",
+        textContent: `Your Sydex verification code is ${code}. It expires in ${Math.ceil(config.OTP_TTL_SECONDS / 60)} minutes. If you did not request this code, you can ignore this email.`,
+        htmlContent: `<p>Your Sydex verification code is:</p><p style="font-size:28px;font-weight:bold;letter-spacing:6px">${code}</p><p>It expires in ${Math.ceil(config.OTP_TTL_SECONDS / 60)} minutes. If you did not request this code, you can ignore this email.</p>`
+      } : {
         from: config.EMAIL_FROM,
         to: [email],
         subject: "Your Sydex verification code",

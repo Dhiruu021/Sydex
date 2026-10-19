@@ -10,7 +10,7 @@ Sydex provides email-only OTP sign-in, profiles and privacy settings, linked-dev
 
 - Node.js 20.19+ or 22.13+ and npm
 - Docker Desktop (for local MongoDB and Redis), or reachable MongoDB/Redis instances
-- A Resend API key and verified sender domain for production email OTP
+- A Brevo API key and verified sender email for production email OTP
 
 ### Run locally
 
@@ -24,7 +24,7 @@ npm run dev
 ```
 
 The server loads the root `.env` file even when npm starts it from the `server` workspace.
-The client is served at `http://localhost:5173` (or the next available Vite port); the versioned API is at `http://localhost:4000/api/v1`. Localhost dev origins are allowed if Vite picks another port. In development, the mock email provider writes the OTP to the server log. For real email, set `EMAIL_OTP_PROVIDER=resend`, `RESEND_API_KEY`, and `EMAIL_FROM` in `.env`. The sender address must be verified in Resend for production delivery. Production refuses to start with the mock provider.
+The client is served at `http://localhost:5173` (or the next available Vite port); the versioned API is at `http://localhost:4000/api/v1`. Localhost dev origins are allowed if Vite picks another port. For real email, set `EMAIL_OTP_PROVIDER=brevo`, `BREVO_API_KEY`, `EMAIL_FROM`, and optionally `EMAIL_FROM_NAME` in `.env`. Verify the sender email in Brevo first. Production refuses to start with the mock provider.
 
 ### Local service troubleshooting
 
@@ -39,7 +39,7 @@ Set `COOKIE_SECURE=true` when serving the API over HTTPS. Keep both JWT secrets 
 The repository includes a Vercel SPA/build config and a Render Blueprint for the API and Redis-compatible Key Value service.
 
 1. Push the repository to GitHub, then create a Render Blueprint from the repository using `render.yaml`.
-2. When prompted, set `MONGODB_URI` to a production MongoDB Atlas URI, `CLIENT_ORIGIN` to the exact Vercel production origin (for example `https://sydex.vercel.app`), `RESEND_API_KEY` to your Resend key, and `EMAIL_FROM` to a sender address verified in Resend. Render generates the JWT secrets and connects its Key Value service as `REDIS_URL`.
+2. When prompted, set `MONGODB_URI` to a production MongoDB Atlas URI, `CLIENT_ORIGIN` to the exact Vercel production origin (for example `https://sydex.vercel.app`), `BREVO_API_KEY` to your Brevo API key, and `EMAIL_FROM` to a sender address verified in Brevo. Render generates the JWT secrets and connects its Key Value service as `REDIS_URL`.
 3. Deploy the Vercel project from the repository root. Set `VITE_API_URL` to `https://<render-service>.onrender.com/api/v1`, then redeploy so Vite includes the API URL in the client build.
 4. If the Vercel production domain was not known when Render was first configured, update Render's `CLIENT_ORIGIN` to the final exact origin and redeploy the API.
 5. Open the Vercel site, request an email code, sign in, then check chat and calling from two browsers.

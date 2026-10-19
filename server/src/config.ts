@@ -14,10 +14,12 @@ const schema = z.object({
   JWT_REFRESH_SECRET: z.string().min(32),
   ACCESS_TOKEN_TTL: z.string().default("15m"),
   REFRESH_TOKEN_DAYS: z.coerce.number().int().positive().default(30),
-  EMAIL_OTP_PROVIDER: z.enum(["mock", "resend"]).default("mock"),
+  EMAIL_OTP_PROVIDER: z.enum(["mock", "resend", "brevo"]).default("mock"),
   OTP_TTL_SECONDS: z.coerce.number().int().positive().default(300),
   RESEND_API_KEY: z.string().optional(),
+  BREVO_API_KEY: z.string().optional(),
   EMAIL_FROM: z.string().min(3).default("onboarding@resend.dev"),
+  EMAIL_FROM_NAME: z.string().default("Sydex"),
   COOKIE_SECURE: z.enum(["true", "false"]).default("false").transform((value) => value === "true"),
   COOKIE_SAME_SITE: z.enum(["lax", "none"]).default("lax")
 });
@@ -29,6 +31,9 @@ if (config.NODE_ENV === "production" && config.EMAIL_OTP_PROVIDER === "mock") {
 }
 if (config.EMAIL_OTP_PROVIDER === "resend" && !config.RESEND_API_KEY) {
   throw new Error("Resend email OTP requires RESEND_API_KEY");
+}
+if (config.EMAIL_OTP_PROVIDER === "brevo" && !config.BREVO_API_KEY) {
+  throw new Error("Brevo email OTP requires BREVO_API_KEY");
 }
 if (config.COOKIE_SAME_SITE === "none" && !config.COOKIE_SECURE) {
   throw new Error("COOKIE_SAME_SITE=none requires COOKIE_SECURE=true");
