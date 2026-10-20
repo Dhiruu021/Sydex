@@ -1,7 +1,5 @@
 import { io } from "socket.io-client";
-import { getAccessToken } from "./api";
-
-const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:4000/api/v1";
+import { apiUrl, getAccessToken } from "./api";
 
 export function connectChatSocket() {
   return io(new URL(apiUrl).origin, {

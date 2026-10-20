@@ -11,7 +11,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: CLIENT_ORIGIN
-        sync: false
+        value: https://sydex-ruddy.vercel.app
       - key: MONGODB_URI
         sync: false
       - key: REDIS_URL

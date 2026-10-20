@@ -7,7 +7,20 @@ import type {
   UserProfile
 } from "@sydex/shared";
 
-const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:4000/api/v1";
+const localApiUrl = "http://localhost:4000/api/v1";
+const productionApiUrl = "https://sydex-api.onrender.com/api/v1";
+const configuredApiUrl = import.meta.env.VITE_API_URL?.trim();
+let configuredApiIsLocal = false;
+if (configuredApiUrl) {
+  try {
+    configuredApiIsLocal = ["localhost", "127.0.0.1", "[::1]"].includes(new URL(configuredApiUrl).hostname);
+  } catch {
+    configuredApiIsLocal = true;
+  }
+}
+export const apiUrl = import.meta.env.PROD && (!configuredApiUrl || configuredApiIsLocal)
+  ? productionApiUrl
+  : configuredApiUrl || localApiUrl;
 let accessToken: string | null = null;
 let refreshInFlight: Promise<AuthResponse> | null = null;
 
