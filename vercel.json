@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm run build -w @sydex/shared && npm run build -w @sydex/client && node scripts/prepare-vercel-output.mjs",
+  "buildCommand": "npm run build -w @sydex/shared && npm run build -w @sydex/client",
   "outputDirectory": "dist",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
