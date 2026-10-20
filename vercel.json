@@ -1,6 +1,6 @@
 {
-  "buildCommand": "npm run build -w @sydex/shared && npm run build -w @sydex/client",
-  "outputDirectory": "client/dist",
+  "buildCommand": "npm run build -w @sydex/shared && npm run build -w @sydex/client && node -e \"require('fs').cpSync('client/dist', 'dist', { recursive: true })\"",
+  "outputDirectory": "dist",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
