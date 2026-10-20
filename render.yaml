@@ -4,7 +4,7 @@ services:
     runtime: node
     plan: free
     region: oregon
-    buildCommand: npm ci && npm run build -w @sydex/shared && npm run build -w @sydex/server
+    buildCommand: npm ci --include=dev && npm run build -w @sydex/shared && npm run build -w @sydex/server
     startCommand: npm run start -w @sydex/server
     healthCheckPath: /health
     envVars:
