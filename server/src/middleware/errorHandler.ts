@@ -18,7 +18,9 @@ export const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
           : 500;
   if (statusCode >= 500) logger.error({ err: error }, "Request failed");
   res.status(statusCode).json({
-    error: statusCode >= 500
+    error: statusCode === 502
+      ? error.message
+      : statusCode >= 500
       ? "Internal server error"
       : statusCode === 404
         ? "Resource not found"

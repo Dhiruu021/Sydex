@@ -7,13 +7,15 @@ const emailKey = (email: string) => `otp:email:${email.toLowerCase()}`;
 
 export async function sendOtp(email: string): Promise<void> {
   const code = String(randomInt(100000, 1_000_000));
-  await redis.set(emailKey(email), code, "EX", config.OTP_TTL_SECONDS);
+  const key = emailKey(email);
+  await redis.set(key, code, "EX", config.OTP_TTL_SECONDS);
   if (config.EMAIL_OTP_PROVIDER === "mock") {
     logger.info({ email, otp: code }, "Development email OTP issued");
     return;
   }
+  const isBrevo = config.EMAIL_OTP_PROVIDER === "brevo";
+  const provider = isBrevo ? "brevo" : "resend";
   try {
-    const isBrevo = config.EMAIL_OTP_PROVIDER === "brevo";
     const response = await fetch(isBrevo ? "https://api.brevo.com/v3/smtp/email" : "https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -35,14 +37,27 @@ export async function sendOtp(email: string): Promise<void> {
       })
     });
     if (!response.ok) {
-      logger.error({ status: response.status }, "Could not send verification email");
-      await redis.del(emailKey(email));
-      throw Object.assign(new Error("Could not send verification email. Please try again."), { statusCode: 502 });
+      const providerError = await response.json().catch(() => null) as { code?: unknown; message?: unknown } | null;
+      logger.error({
+        provider,
+        status: response.status,
+        code: typeof providerError?.code === "string" ? providerError.code : undefined,
+        message: typeof providerError?.message === "string" ? providerError.message : undefined
+      }, "Email provider rejected verification email");
+      await redis.del(key).catch((error: unknown) => logger.warn({ err: error }, "Could not clear failed email OTP"));
+      throw Object.assign(
+        new Error("Could not send the verification email. Check the Brevo API key and verified sender address."),
+        { statusCode: 502 }
+      );
     }
   } catch (error) {
-    await redis.del(emailKey(email));
+    await redis.del(key).catch((redisError: unknown) => logger.warn({ err: redisError }, "Could not clear failed email OTP"));
     if (error instanceof Error && "statusCode" in error) throw error;
-    throw Object.assign(new Error("Could not send verification email. Please try again."), { statusCode: 502 });
+    logger.error({ err: error, provider }, "Could not reach email provider");
+    throw Object.assign(
+      new Error("Could not reach the email provider. Check the provider configuration and try again."),
+      { statusCode: 502 }
+    );
   }
 }
 
